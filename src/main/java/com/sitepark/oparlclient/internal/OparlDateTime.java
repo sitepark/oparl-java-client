@@ -1,0 +1,21 @@
+package com.sitepark.oparlclient.internal;
+
+import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Marks an {@code OffsetDateTime} property as OParl {@code date-time}. It is read tolerantly and
+ * written as {@code yyyy-mm-ddThh:mm:ss±hh:mm}, with any {@code ObjectMapper}, see {@link
+ * OparlTimeSerialization}.
+ */
+@Target({ElementType.FIELD, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@JacksonAnnotationsInside
+@JsonSerialize(using = OparlTimeSerialization.DateTimeSerializer.class)
+@JsonDeserialize(using = OparlTimeSerialization.DateTimeDeserializer.class)
+public @interface OparlDateTime {}

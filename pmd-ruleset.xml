@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		name="OParl Java Client PMD RuleSet"
+		xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+		xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+
+	<description>OParl Java Client PMD RuleSet</description>
+
+	<rule ref="category/java/bestpractices.xml">
+		<!-- assertions without message and several assertions per test are fine -->
+		<exclude name="UnitTestAssertionsShouldIncludeMessage"/>
+		<exclude name="UnitTestContainsTooManyAsserts"/>
+	</rule>
+
+	<rule ref="category/java/design.xml">
+		<exclude name="LawOfDemeter"/>
+		<!-- the OParl objects map the properties of the specification -->
+		<exclude name="DataClass"/>
+		<exclude name="TooManyFields"/>
+		<exclude name="ExcessivePublicCount"/>
+	</rule>
+
+	<rule ref="category/java/errorprone.xml"/>
+	<rule ref="category/java/performance.xml"/>
+	<rule ref="category/java/security.xml"/>
+
+	<rule ref="category/java/multithreading.xml">
+		<!-- J2EE rule; the tests run a mock server -->
+		<exclude name="DoNotUseThreads"/>
+	</rule>
+
+	<rule ref="category/java/errorprone.xml/EmptyCatchBlock">
+		<properties>
+			<property name="allowCommentedBlocks" value="true"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/design.xml/SignatureDeclareThrowsException">
+		<properties>
+			<property name="violationSuppressXPath"
+					value="./ancestor-or-self::ClassDeclaration[matches(@SimpleName, '^.*Test$')]"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/errorprone.xml/AvoidFieldNameMatchingMethodName">
+		<properties>
+			<property name="violationSuppressXPath"
+					value="./ancestor-or-self::ClassDeclaration[matches(@SimpleName, '^.*(Builder|Test)$')]"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/errorprone.xml/AvoidDuplicateLiterals">
+		<properties>
+			<property name="violationSuppressXPath"
+					value="./ancestor-or-self::ClassDeclaration[matches(@SimpleName, '^.*Test$')]"/>
+		</properties>
+	</rule>
+
+	<rule ref="category/java/design.xml/TooManyMethods">
+		<properties>
+			<property name="violationSuppressXPath"
+					value="./ancestor-or-self::ClassDeclaration[matches(@SimpleName, '^(.*Test|MockOparlServer)$')]"/>
+		</properties>
+	</rule>
+
+</ruleset>

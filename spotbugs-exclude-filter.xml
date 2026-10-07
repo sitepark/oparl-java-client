@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter
+		xmlns="https://github.com/spotbugs/filter/3.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/3.1.0/spotbugs/etc/findbugsfilter.xsd">
+
+	<!-- https://spotbugs.readthedocs.io/en/stable/filter.html -->
+
+	<!-- the OParl objects and list pages are mutable data objects mapped by Jackson -->
+	<Match>
+		<Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+	</Match>
+
+	<!-- the object types inherit equals and hashCode based on the id from OparlObjectV1 -->
+	<Match>
+		<Package name="com.sitepark.oparlclient.v1.objects"/>
+		<Bug pattern="EQ_DOESNT_OVERRIDE_EQUALS"/>
+	</Match>
+
+	<!-- throwing the cause of a CompletionException is the purpose of OparlFutures.join -->
+	<Match>
+		<Class name="com.sitepark.oparlclient.core.OparlFutures"/>
+		<Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION"/>
+	</Match>
+
+	<Match>
+		<Class name="~.*Test"/>
+		<Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
+	</Match>
+
+</FindBugsFilter>

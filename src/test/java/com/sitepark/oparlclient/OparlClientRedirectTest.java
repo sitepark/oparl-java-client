@@ -35,7 +35,7 @@ class OparlClientRedirectTest {
   @Test
   void defaultClientFollowsRedirects() {
     OparlBody body =
-        new OparlClient().resolve(this.server.uri("/old/body/1"), OparlBody.class).join();
+        new OparlClient().getAsync(this.server.uri("/old/body/1"), OparlBody.class).join();
 
     assertEquals("Stadt Beispiel", body.getName());
   }
@@ -45,7 +45,7 @@ class OparlClientRedirectTest {
     this.server.redirectToLocationHeader("/older/body/1", 301, "../../body/1");
 
     OparlBody body =
-        new OparlClient().resolve(this.server.uri("/older/body/1"), OparlBody.class).join();
+        new OparlClient().getAsync(this.server.uri("/older/body/1"), OparlBody.class).join();
 
     assertEquals("Stadt Beispiel", body.getName());
   }
@@ -57,7 +57,7 @@ class OparlClientRedirectTest {
 
     OparlList<OparlBody> list =
         new OparlClient()
-            .resolve(this.server.uri("/old/bodies"), new TypeReference<OparlList<OparlBody>>() {})
+            .getAsync(this.server.uri("/old/bodies"), new TypeReference<OparlList<OparlBody>>() {})
             .join();
 
     assertEquals(
@@ -71,7 +71,7 @@ class OparlClientRedirectTest {
     CompletionException e =
         assertThrows(
             CompletionException.class,
-            () -> client.resolve(this.server.uri("/old/body/1"), OparlBody.class).join());
+            () -> client.getAsync(this.server.uri("/old/body/1"), OparlBody.class).join());
 
     assertEquals(301, assertInstanceOf(OparlHttpException.class, e.getCause()).getStatusCode());
   }

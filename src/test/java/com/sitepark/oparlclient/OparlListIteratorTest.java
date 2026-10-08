@@ -93,7 +93,7 @@ class OparlListIteratorTest {
     this.server.redirect("/old/p1", 301, "/p1");
     this.page("/p1", null, null, "a");
 
-    OparlList<OparlBody> page = this.resolve("/old/p1");
+    OparlList<OparlBody> page = this.load("/old/p1");
 
     assertEquals(Set.of(this.server.uri("/old/p1"), this.server.uri("/p1")), page.getSourceUris());
   }
@@ -101,7 +101,7 @@ class OparlListIteratorTest {
   @Test
   void throwsNoSuchElementExceptionAtEnd() {
     this.page("/p1", "/p1", null, "a");
-    Iterator<OparlBody> iterator = this.resolve("/p1").all().iterator();
+    Iterator<OparlBody> iterator = this.load("/p1").all().iterator();
 
     assertTrue(iterator.hasNext());
     assertTrue(iterator.hasNext());
@@ -114,7 +114,7 @@ class OparlListIteratorTest {
   void nextWorksWithoutHasNext() {
     this.page("/p1", "/p1", "/p2", "a");
     this.page("/p2", "/p2", null, "b");
-    Iterator<OparlBody> iterator = this.resolve("/p1").all().iterator();
+    Iterator<OparlBody> iterator = this.load("/p1").all().iterator();
 
     assertEquals("a", iterator.next().getName());
     assertEquals("b", iterator.next().getName());
@@ -145,15 +145,15 @@ class OparlListIteratorTest {
     this.server.respondJson(path, 200, json.toString());
   }
 
-  private OparlList<OparlBody> resolve(String path) {
+  private OparlList<OparlBody> load(String path) {
     return this.client
-        .resolve(this.server.uri(path), new TypeReference<OparlList<OparlBody>>() {})
+        .getAsync(this.server.uri(path), new TypeReference<OparlList<OparlBody>>() {})
         .join();
   }
 
   private List<String> namesFrom(String path) {
     List<String> names = new ArrayList<>();
-    this.resolve(path).all().forEach(body -> names.add(body.getName()));
+    this.load(path).all().forEach(body -> names.add(body.getName()));
     return names;
   }
 }

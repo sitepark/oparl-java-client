@@ -55,8 +55,8 @@ import java.util.function.Consumer;
  * }
  * }</pre>
  *
- * <p>All requests are sent asynchronously; the {@code resolve...} methods return a {@link
- * CompletableFuture}, the {@code get} methods wait for the result. A client is thread-safe and
+ * <p>Every request exists in two variants: the methods ending in {@code Async} return a {@link
+ * CompletableFuture}, the others wait for the result. A client is thread-safe and
  * should be reused. Use {@link #builder()} to configure the timeout or the user agent.
  */
 // the entry point of the library: brings together the http client, Jackson and the OParl types
@@ -120,7 +120,7 @@ public class OparlClient implements OparlReferenceResolver {
   }
 
   /** Returns the http client used to send the requests. */
-  public HttpClient getClient() {
+  public HttpClient getHttpClient() {
     return client;
   }
 
@@ -135,21 +135,21 @@ public class OparlClient implements OparlReferenceResolver {
   }
 
   /**
-   * Resolves the OParl object at the given URL.
+   * Requests the OParl object at the given URL asynchronously.
    *
    * @param uri the URL of the object
    * @param clazz the class to map the object to, e.g. {@code OparlBody.class}
    * @return the object; the future fails with an {@link OparlException}, e.g. an {@link
    *     OparlHttpException} if the server answers with an error
    */
-  public <R> CompletableFuture<R> resolve(String uri, Class<R> clazz) {
+  public <R> CompletableFuture<R> getAsync(String uri, Class<R> clazz) {
     URI parsed;
     try {
       parsed = URI.create(uri);
     } catch (IllegalArgumentException e) {
       return CompletableFuture.failedFuture(invalidUrl(uri, e));
     }
-    return this.resolve(
+    return this.getAsync(
         parsed,
         new TypeReference<R>() {
           @Override
@@ -159,9 +159,9 @@ public class OparlClient implements OparlReferenceResolver {
         });
   }
 
-  /** See {@link #resolve(String, Class)}. */
-  public <R> CompletableFuture<R> resolve(URI uri, Class<R> clazz) {
-    return this.resolve(
+  /** See {@link #getAsync(String, Class)}. */
+  public <R> CompletableFuture<R> getAsync(URI uri, Class<R> clazz) {
+    return this.getAsync(
         uri,
         new TypeReference<R>() {
           @Override
@@ -172,35 +172,35 @@ public class OparlClient implements OparlReferenceResolver {
   }
 
   /**
-   * Resolves the given URL and waits for the result, see {@link OparlFutures#join} for the thrown
-   * exceptions.
+   * Requests the OParl object at the given URL and waits for the result, see {@link
+   * OparlFutures#join} for the thrown exceptions.
    */
   public <R> R get(String uri, Class<R> clazz) {
-    return OparlFutures.join(this.resolve(uri, clazz));
+    return OparlFutures.join(this.getAsync(uri, clazz));
   }
 
   /** See {@link #get(String, Class)}. */
   public <R> R get(URI uri, Class<R> clazz) {
-    return OparlFutures.join(this.resolve(uri, clazz));
+    return OparlFutures.join(this.getAsync(uri, clazz));
   }
 
   /** See {@link #get(String, Class)}. */
   public <R> R get(URI uri, TypeReference<R> typeReference) {
-    return OparlFutures.join(this.resolve(uri, typeReference));
+    return OparlFutures.join(this.getAsync(uri, typeReference));
   }
 
   /**
-   * Resolves the OParl object or list at the given URL. Use this variant for generic types, e.g.
-   * a list page:
+   * Requests the OParl object or list at the given URL asynchronously. Use this variant for generic
+   * types, e.g. a list page:
    *
    * <pre>{@code
-   * client.resolve(uri, new TypeReference<OparlList<OparlMeeting>>() {});
+   * client.getAsync(uri, new TypeReference<OparlList<OparlMeeting>>() {});
    * }</pre>
    *
-   * @see #resolve(String, Class)
+   * @see #getAsync(String, Class)
    */
   @Override
-  public <R> CompletableFuture<R> resolve(URI uri, TypeReference<R> typeReference) {
+  public <R> CompletableFuture<R> getAsync(URI uri, TypeReference<R> typeReference) {
     return this.send(uri)
         .thenApply(
             response -> {
@@ -236,7 +236,8 @@ public class OparlClient implements OparlReferenceResolver {
   }
 
   /**
-   * Resolves an OParl object without knowing its type in advance. The class of the result is
+   * Requests an OParl object without knowing its type in advance and waits for the result, see
+   * {@link OparlFutures#join} for the thrown exceptions. The class of the result is
    * determined by the {@code type} property, e.g. an {@link OparlBody} for {@code
    * https://schema.oparl.org/1.1/Body}.
    *
@@ -247,17 +248,27 @@ public class OparlClient implements OparlReferenceResolver {
    *
    * @return the object
    */
-  public CompletableFuture<OparlObjectV1> resolveAny(String uri) {
+  public OparlObjectV1 getAny(String uri) {
+    return OparlFutures.join(this.getAnyAsync(uri));
+  }
+
+  /** See {@link #getAny(String)}. */
+  public OparlObjectV1 getAny(URI uri) {
+    return OparlFutures.join(this.getAnyAsync(uri));
+  }
+
+  /** Asynchronous variant of {@link #getAny(String)}. */
+  public CompletableFuture<OparlObjectV1> getAnyAsync(String uri) {
     try {
-      return this.resolveAny(URI.create(uri));
+      return this.getAnyAsync(URI.create(uri));
     } catch (IllegalArgumentException e) {
       return CompletableFuture.failedFuture(invalidUrl(uri, e));
     }
   }
 
-  /** See {@link #resolveAny(String)}. */
-  public CompletableFuture<OparlObjectV1> resolveAny(URI uri) {
-    return this.resolve(uri, new TypeReference<JsonNode>() {})
+  /** Asynchronous variant of {@link #getAny(String)}. */
+  public CompletableFuture<OparlObjectV1> getAnyAsync(URI uri) {
+    return this.getAsync(uri, new TypeReference<JsonNode>() {})
         .thenApply(
             node -> {
               String type = node.path("type").isTextual() ? node.get("type").textValue() : null;

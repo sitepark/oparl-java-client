@@ -33,7 +33,7 @@ class OparlClientTypeTest {
 
   @Test
   void resolvesObjectOfUnknownType() {
-    OparlObjectV1 object = new OparlClient().resolveAny(this.server.uri("/meeting/1")).join();
+    OparlObjectV1 object = new OparlClient().getAnyAsync(this.server.uri("/meeting/1")).join();
 
     OparlMeeting meeting = assertInstanceOf(OparlMeeting.class, object);
     assertEquals("Ratssitzung", meeting.getName());
@@ -51,7 +51,7 @@ class OparlClientTypeTest {
             + "\"type\":\"https://hersteller.example.org/oparl/Ausschussvorlage\","
             + "\"Hersteller:titel\":\"Vorlage 1\"}");
 
-    OparlObjectV1 object = new OparlClient().resolveAny(this.server.uri("/other")).join();
+    OparlObjectV1 object = new OparlClient().getAnyAsync(this.server.uri("/other")).join();
 
     assertEquals(OparlObjectV1.class, object.getClass());
     assertEquals(URI.create("https://oparl.example.org/other/1"), object.getId());
@@ -63,7 +63,7 @@ class OparlClientTypeTest {
   void resolvesObjectWithoutTypeAsGenericObject() {
     this.server.respondJson("/untyped", 200, "{\"name\":\"x\"}");
 
-    OparlObjectV1 object = new OparlClient().resolveAny(this.server.uri("/untyped")).join();
+    OparlObjectV1 object = new OparlClient().getAnyAsync(this.server.uri("/untyped")).join();
 
     assertEquals(OparlObjectV1.class, object.getClass());
     assertEquals("x", object.getAdditionalProperty("name").asText());
@@ -75,7 +75,7 @@ class OparlClientTypeTest {
         "/meeting/2", 200, "{\"type\":\"https://schema.oparl.org/1.1/Meeting\"}");
 
     OparlBody body =
-        new OparlClient().resolve(this.server.uri("/meeting/2"), OparlBody.class).join();
+        new OparlClient().getAsync(this.server.uri("/meeting/2"), OparlBody.class).join();
 
     assertEquals("https://schema.oparl.org/1.1/Meeting", body.getType());
   }

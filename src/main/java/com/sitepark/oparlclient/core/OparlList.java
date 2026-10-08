@@ -95,16 +95,16 @@ public class OparlList<T> extends OparlObject {
   }
 
   /**
-   * Fetches the following page.
+   * Fetches the following page asynchronously.
    *
    * @return the following page, or a future failed with a {@link NoSuchElementException} if this
    *     is the last page
    */
-  public CompletableFuture<OparlList<T>> nextPage() {
+  public CompletableFuture<OparlList<T>> fetchNextPageAsync() {
     if (!this.hasNextPage()) {
       return CompletableFuture.failedFuture(new NoSuchElementException("This is the last page"));
     }
-    return this.links.getNext().resolve();
+    return this.links.getNext().getAsync();
   }
 
   /**
@@ -113,9 +113,8 @@ public class OparlList<T> extends OparlObject {
    *
    * @throws NoSuchElementException if this is the last page
    */
-  @JsonIgnore
-  public OparlList<T> getNextPage() {
-    return OparlFutures.join(this.nextPage());
+  public OparlList<T> fetchNextPage() {
+    return OparlFutures.join(this.fetchNextPageAsync());
   }
 
   /**
@@ -209,7 +208,7 @@ public class OparlList<T> extends OparlObject {
         return;
       }
       this.nextPageUri = next.getUri();
-      this.nextPage = next.resolve();
+      this.nextPage = next.getAsync();
     }
 
     private OparlList<T> awaitNextPage() {

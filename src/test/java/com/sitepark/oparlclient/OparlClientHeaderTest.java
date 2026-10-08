@@ -26,14 +26,14 @@ class OparlClientHeaderTest {
 
   @Test
   void sendsAcceptHeader() {
-    new OparlClient().resolve(this.server.uri("/body/1"), OparlBody.class).join();
+    new OparlClient().getAsync(this.server.uri("/body/1"), OparlBody.class).join();
 
     assertEquals("application/json", this.server.lastRequestHeader("Accept"));
   }
 
   @Test
   void sendsDefaultUserAgentWithVersion() {
-    new OparlClient().resolve(this.server.uri("/body/1"), OparlBody.class).join();
+    new OparlClient().getAsync(this.server.uri("/body/1"), OparlBody.class).join();
 
     String userAgent = this.server.lastRequestHeader("User-Agent");
     assertEquals(OparlClient.DEFAULT_USER_AGENT, userAgent);
@@ -45,7 +45,7 @@ class OparlClientHeaderTest {
     OparlClient client =
         OparlClient.builder().userAgent("my-app/1.0 (+https://example.org/contact)").build();
 
-    client.resolve(this.server.uri("/body/1"), OparlBody.class).join();
+    client.getAsync(this.server.uri("/body/1"), OparlBody.class).join();
 
     assertEquals(
         "my-app/1.0 (+https://example.org/contact)", this.server.lastRequestHeader("User-Agent"));

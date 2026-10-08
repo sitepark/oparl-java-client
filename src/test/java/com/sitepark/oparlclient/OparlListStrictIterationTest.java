@@ -43,7 +43,7 @@ class OparlListStrictIterationTest {
     this.page("/p3", null, "c");
 
     List<String> names = new ArrayList<>();
-    for (OparlBody body : this.resolve("/p1").all()) {
+    for (OparlBody body : this.load("/p1").all()) {
       names.add(body.getName());
     }
 
@@ -56,7 +56,7 @@ class OparlListStrictIterationTest {
     this.page("/p2", null, "c");
 
     List<String> names =
-        this.resolve("/p1").stream().map(OparlBody::getName).collect(Collectors.toList());
+        this.load("/p1").stream().map(OparlBody::getName).collect(Collectors.toList());
 
     assertEquals(List.of("a", "b", "c"), names);
   }
@@ -68,7 +68,7 @@ class OparlListStrictIterationTest {
     this.page("/p3", null, "d");
 
     List<String> names =
-        this.resolve("/p1").stream().limit(1).map(OparlBody::getName).collect(Collectors.toList());
+        this.load("/p1").stream().limit(1).map(OparlBody::getName).collect(Collectors.toList());
 
     assertEquals(List.of("a"), names);
     assertEquals(0, this.server.requestCount("/p3"));
@@ -83,7 +83,7 @@ class OparlListStrictIterationTest {
     OparlHttpException e =
         assertThrows(
             OparlHttpException.class,
-            () -> this.resolve("/p1").all().forEach(body -> names.add(body.getName())));
+            () -> this.load("/p1").all().forEach(body -> names.add(body.getName())));
 
     assertEquals(List.of("a"), names);
     assertEquals(this.server.uri("/p2"), e.getUri());
@@ -96,7 +96,7 @@ class OparlListStrictIterationTest {
     this.server.respond("/p2", 500, "text/plain", "error");
 
     assertThrows(
-        OparlHttpException.class, () -> this.resolve("/p1").stream().collect(Collectors.toList()));
+        OparlHttpException.class, () -> this.load("/p1").stream().collect(Collectors.toList()));
   }
 
   @Test
@@ -104,13 +104,13 @@ class OparlListStrictIterationTest {
     this.page("/p1", "/p2", "a");
     this.page("/p2", "/p1", "b");
 
-    assertEquals(2, this.resolve("/p1").stream().count());
+    assertEquals(2, this.load("/p1").stream().count());
   }
 
   @Test
   void canIterateMoreThanOnce() {
     this.page("/p1", null, "a");
-    Iterable<OparlBody> all = this.resolve("/p1").all();
+    Iterable<OparlBody> all = this.load("/p1").all();
 
     assertEquals("a", all.iterator().next().getName());
     assertEquals("a", all.iterator().next().getName());
@@ -120,14 +120,15 @@ class OparlListStrictIterationTest {
   void navigatesToNextPage() {
     this.page("/p1", "/p2", "a");
     this.page("/p2", null, "b");
-    OparlList<OparlBody> first = this.resolve("/p1");
+    OparlList<OparlBody> first = this.load("/p1");
 
     assertTrue(first.hasNextPage());
-    OparlList<OparlBody> second = first.nextPage().join();
+    OparlList<OparlBody> second = first.fetchNextPageAsync().join();
 
     assertEquals("b", second.getData().get(0).getName());
     assertFalse(second.hasNextPage());
-    CompletionException e = assertThrows(CompletionException.class, () -> second.nextPage().join());
+    CompletionException e =
+        assertThrows(CompletionException.class, () -> second.fetchNextPageAsync().join());
     assertInstanceOf(NoSuchElementException.class, e.getCause());
   }
 
@@ -135,7 +136,7 @@ class OparlListStrictIterationTest {
   void serializesPageWithoutSourceUris() throws Exception {
     this.page("/p1", null, "a");
 
-    String json = new ObjectMapper().writeValueAsString(this.resolve("/p1"));
+    String json = new ObjectMapper().writeValueAsString(this.load("/p1"));
 
     assertTrue(json.contains("\"data\":[{"), json);
     assertFalse(json.contains("sourceUris"), json);
@@ -155,9 +156,9 @@ class OparlListStrictIterationTest {
     this.server.respondJson(path, 200, json.toString());
   }
 
-  private OparlList<OparlBody> resolve(String path) {
+  private OparlList<OparlBody> load(String path) {
     return this.client
-        .resolve(this.server.uri(path), new TypeReference<OparlList<OparlBody>>() {})
+        .getAsync(this.server.uri(path), new TypeReference<OparlList<OparlBody>>() {})
         .join();
   }
 }

@@ -12,6 +12,7 @@ import com.sitepark.oparlclient.core.OparlHttpException;
 import com.sitepark.oparlclient.core.OparlList;
 import com.sitepark.oparlclient.core.OparlParseException;
 import com.sitepark.oparlclient.v1.objects.OparlBody;
+import com.sitepark.oparlclient.v1.objects.OparlMeeting;
 import com.sitepark.oparlclient.v1.objects.OparlSystem;
 import java.io.IOException;
 import java.util.NoSuchElementException;
@@ -68,14 +69,35 @@ class SynchronousAccessTest {
   }
 
   @Test
+  void getsObjectOfUnknownType() {
+    this.server.respondJson(
+        "/meeting/1", 200, "{\"type\":\"https://schema.oparl.org/1.1/Meeting\",\"name\":\"Rat\"}");
+
+    OparlMeeting meeting =
+        assertInstanceOf(OparlMeeting.class, this.client.getAny(this.server.uri("/meeting/1")));
+
+    assertEquals("Rat", meeting.getName());
+  }
+
+  @Test
+  void getsReferencedObjectAsOtherClass() {
+    OparlSystem system = this.client.get(this.server.uri("/system"), OparlSystem.class);
+
+    OparlList<OparlBody> bodies =
+        system.getBody().get(new TypeReference<OparlList<OparlBody>>() {});
+
+    assertEquals("a", bodies.getData().get(0).getName());
+  }
+
+  @Test
   void getsNextPage() {
     OparlList<OparlBody> first =
         this.client.get(this.server.uri("/bodies"), new TypeReference<OparlList<OparlBody>>() {});
 
-    OparlList<OparlBody> second = first.getNextPage();
+    OparlList<OparlBody> second = first.fetchNextPage();
 
     assertEquals("b", second.getData().get(0).getName());
-    assertThrows(NoSuchElementException.class, second::getNextPage);
+    assertThrows(NoSuchElementException.class, second::fetchNextPage);
   }
 
   @Test

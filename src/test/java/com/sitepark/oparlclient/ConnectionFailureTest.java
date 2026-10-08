@@ -36,7 +36,7 @@ class ConnectionFailureTest {
 
     CompletionException e =
         assertThrows(
-            CompletionException.class, () -> this.client.resolve(uri, OparlBody.class).join());
+            CompletionException.class, () -> this.client.getAsync(uri, OparlBody.class).join());
 
     OparlConnectionException cause = assertInstanceOf(OparlConnectionException.class, e.getCause());
     assertEquals(uri, cause.getUri());

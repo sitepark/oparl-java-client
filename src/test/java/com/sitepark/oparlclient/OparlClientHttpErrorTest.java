@@ -39,7 +39,7 @@ class OparlClientHttpErrorTest {
         "{\"id\":\"https://oparl.example.org/body/1\","
             + "\"type\":\"https://schema.oparl.org/1.1/Body\",\"name\":\"Stadt Beispiel\"}");
 
-    OparlBody body = this.client.resolve(this.server.uri("/body/1"), OparlBody.class).join();
+    OparlBody body = this.client.getAsync(this.server.uri("/body/1"), OparlBody.class).join();
 
     assertEquals("Stadt Beispiel", body.getName());
   }
@@ -113,7 +113,7 @@ class OparlClientHttpErrorTest {
     CompletionException e =
         assertThrows(
             CompletionException.class,
-            () -> this.client.resolve(this.server.uri(path), OparlBody.class).join());
+            () -> this.client.getAsync(this.server.uri(path), OparlBody.class).join());
     return assertInstanceOf(OparlHttpException.class, e.getCause());
   }
 }

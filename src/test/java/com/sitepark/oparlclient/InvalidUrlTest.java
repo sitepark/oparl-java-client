@@ -34,7 +34,8 @@ class InvalidUrlTest {
 
   @Test
   void reportsRelativeReferenceThroughFuture() throws Exception {
-    CompletableFuture<?> future = this.consultationWithMeeting("/meeting/1").getMeeting().resolve();
+    CompletableFuture<?> future =
+        this.consultationWithMeeting("/meeting/1").getMeeting().getAsync();
 
     Throwable cause = failureOf(future);
     assertInstanceOf(OparlException.class, cause);
@@ -44,7 +45,7 @@ class InvalidUrlTest {
   @Test
   void reportsUnsupportedSchemeThroughFuture() throws Exception {
     CompletableFuture<?> future =
-        this.consultationWithMeeting("ftp://oparl.example.org/meeting/1").getMeeting().resolve();
+        this.consultationWithMeeting("ftp://oparl.example.org/meeting/1").getMeeting().getAsync();
 
     assertInstanceOf(OparlException.class, failureOf(future));
   }
@@ -52,13 +53,13 @@ class InvalidUrlTest {
   @Test
   void reportsInvalidStringUrlThroughFuture() {
     Throwable cause =
-        failureOf(this.client.resolve("https://oparl.example.org/a b", OparlBody.class));
+        failureOf(this.client.getAsync("https://oparl.example.org/a b", OparlBody.class));
 
     assertEquals(OparlException.class, cause.getClass());
     assertInstanceOf(IllegalArgumentException.class, cause.getCause());
     assertEquals(
         OparlException.class,
-        failureOf(this.client.resolveAny("https://oparl.example.org/a b")).getClass());
+        failureOf(this.client.getAnyAsync("https://oparl.example.org/a b")).getClass());
   }
 
   @Test
@@ -86,9 +87,9 @@ class InvalidUrlTest {
     OparlReference<OparlBody> reference =
         new OparlReference<>(URI.create("https://oparl.example.org/body/1"), null, null);
 
-    assertInstanceOf(IllegalStateException.class, failureOf(reference.resolve()));
+    assertInstanceOf(IllegalStateException.class, failureOf(reference.getAsync()));
     assertInstanceOf(
-        IllegalStateException.class, failureOf(reference.resolveAs(OparlConsultation.class)));
+        IllegalStateException.class, failureOf(reference.getAsync(OparlConsultation.class)));
   }
 
   private OparlList<OparlBody> pageWithNext(String next) throws Exception {

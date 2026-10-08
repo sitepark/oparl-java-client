@@ -78,11 +78,12 @@ A client is thread-safe and should be reused for all requests.
 
 ### Resolving objects
 
-Every method exists in an asynchronous and a synchronous variant:
+Every request exists in a synchronous and an asynchronous variant; the asynchronous one ends in
+`Async`:
 
 ```java
 // asynchronous, returns a CompletableFuture
-CompletableFuture<OparlBody> future = client.resolve(bodyUrl, OparlBody.class);
+CompletableFuture<OparlBody> future = client.getAsync(bodyUrl, OparlBody.class);
 
 // synchronous, waits for the result and throws the actual exception
 OparlBody body = client.get(bodyUrl, OparlBody.class);
@@ -91,11 +92,11 @@ OparlBody body = client.get(bodyUrl, OparlBody.class);
 The synchronous `get()` throws the cause directly, e.g. an `OparlHttpException`, instead of a
 `CompletionException`. `OparlFutures.join(future)` does the same for any future of this library.
 
-If the type of an object is not known in advance, `resolveAny()` returns the matching subclass of
+If the type of an object is not known in advance, `getAny()` returns the matching subclass of
 `OparlObjectV1`, determined by its `type` property:
 
 ```java
-OparlObjectV1 object = client.resolveAny(someUrl).join();
+OparlObjectV1 object = client.getAny(someUrl);
 if (object instanceof OparlMeeting) {
   // ...
 }
@@ -115,7 +116,7 @@ OparlReference<OparlMeeting> reference = consultation.getMeeting();
 
 URI meetingUrl = reference.getUri();           // only the URL, no request
 OparlMeeting meeting = reference.get();        // synchronous
-reference.resolve().thenAccept(m -> ...);      // asynchronous
+reference.getAsync().thenAccept(m -> ...);      // asynchronous
 ```
 
 Lists of references, e.g. the originators of a paper, are `List<OparlReference<…>>` as well:
@@ -141,7 +142,7 @@ page.getData();                              // the elements of this page
 page.getPagination().getTotalElements();     // optional, depending on the server
 
 if (page.hasNextPage()) {
-  OparlList<OparlBody> next = page.getNextPage();
+  OparlList<OparlBody> next = page.fetchNextPage();
 }
 
 // all elements of all pages; further pages are fetched while iterating

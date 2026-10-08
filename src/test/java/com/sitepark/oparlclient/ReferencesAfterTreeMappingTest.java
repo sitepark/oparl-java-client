@@ -38,7 +38,8 @@ class ReferencesAfterTreeMappingTest {
   @Test
   void resolvesReferencesOfObjectsResolvedWithResolveAny() {
     OparlConsultation consultation =
-        (OparlConsultation) new OparlClient().resolveAny(this.server.uri("/consultation/1")).join();
+        (OparlConsultation)
+            new OparlClient().getAnyAsync(this.server.uri("/consultation/1")).join();
 
     assertEquals("Ratssitzung", consultation.getMeeting().get().getName());
   }

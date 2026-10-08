@@ -25,7 +25,7 @@ class OparlReferenceDeserializerTest {
     private JavaType resolvedType;
 
     @Override
-    public <R> CompletableFuture<R> resolve(URI uri, TypeReference<R> typeReference) {
+    public <R> CompletableFuture<R> getAsync(URI uri, TypeReference<R> typeReference) {
       this.resolvedType = (JavaType) typeReference.getType();
       return CompletableFuture.completedFuture(null);
     }
@@ -40,7 +40,7 @@ class OparlReferenceDeserializerTest {
             "{\"meeting\":\"https://oparl.example.org/meeting/1\"}",
             new TypeReference<OparlConsultation>() {});
 
-    consultation.getMeeting().resolve();
+    consultation.getMeeting().getAsync();
 
     assertEquals(OparlMeeting.class, this.client.resolvedType.getRawClass());
   }
@@ -52,7 +52,7 @@ class OparlReferenceDeserializerTest {
             "{\"bodies\":[\"https://oparl.example.org/body/1\"]}",
             new TypeReference<OparlLocation>() {});
 
-    location.getBodies().get(0).resolve();
+    location.getBodies().get(0).getAsync();
 
     assertEquals(OparlBody.class, this.client.resolvedType.getRawClass());
   }
@@ -63,7 +63,7 @@ class OparlReferenceDeserializerTest {
         this.client.deserializeJson(
             "{\"body\":\"https://oparl.example.org/bodies\"}", new TypeReference<OparlSystem>() {});
 
-    system.getBody().resolve();
+    system.getBody().getAsync();
 
     assertEquals(OparlList.class, this.client.resolvedType.getRawClass());
     assertEquals(OparlBody.class, this.client.resolvedType.containedType(0).getRawClass());
@@ -76,7 +76,7 @@ class OparlReferenceDeserializerTest {
             "\"https://oparl.example.org/body/1\"",
             new TypeReference<OparlReference<OparlBody>>() {});
 
-    reference.resolve();
+    reference.getAsync();
 
     assertEquals(OparlBody.class, this.client.resolvedType.getRawClass());
   }
@@ -88,7 +88,7 @@ class OparlReferenceDeserializerTest {
             "[\"https://oparl.example.org/body/1\"]",
             new TypeReference<List<OparlReference<OparlBody>>>() {});
 
-    references.get(0).resolve();
+    references.get(0).getAsync();
 
     assertEquals(OparlBody.class, this.client.resolvedType.getRawClass());
   }

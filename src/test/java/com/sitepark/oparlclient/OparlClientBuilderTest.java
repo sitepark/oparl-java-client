@@ -23,8 +23,8 @@ class OparlClientBuilderTest {
     OparlClient client = OparlClient.builder().build();
 
     assertEquals(OparlClient.DEFAULT_REQUEST_TIMEOUT, client.getRequestTimeout());
-    assertNotNull(client.getClient());
-    assertEquals(HttpClient.Redirect.NORMAL, client.getClient().followRedirects());
+    assertNotNull(client.getHttpClient());
+    assertEquals(HttpClient.Redirect.NORMAL, client.getHttpClient().followRedirects());
   }
 
   @Test
@@ -36,7 +36,7 @@ class OparlClientBuilderTest {
               .requestTimeout(Duration.ofSeconds(30))
               .build();
 
-      assertSame(httpClient, client.getClient());
+      assertSame(httpClient, client.getHttpClient());
       assertEquals(Duration.ofSeconds(30), client.getRequestTimeout());
     }
   }

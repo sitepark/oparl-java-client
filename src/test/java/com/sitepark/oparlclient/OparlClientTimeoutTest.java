@@ -44,7 +44,7 @@ class OparlClientTimeoutTest {
     CompletionException e =
         assertThrows(
             CompletionException.class,
-            () -> client.resolve(this.server.uri("/slow/body"), OparlBody.class).join());
+            () -> client.getAsync(this.server.uri("/slow/body"), OparlBody.class).join());
 
     assertInstanceOf(OparlTimeoutException.class, e.getCause());
   }
@@ -61,7 +61,7 @@ class OparlClientTimeoutTest {
                 assertThrows(
                     CompletionException.class,
                     () ->
-                        client.resolve(this.server.uri("/stalled/body"), OparlBody.class).join()));
+                        client.getAsync(this.server.uri("/stalled/body"), OparlBody.class).join()));
 
     assertInstanceOf(OparlTimeoutException.class, e.getCause());
   }
@@ -70,7 +70,7 @@ class OparlClientTimeoutTest {
   void succeedsWithinTimeout() {
     OparlClient client = OparlClient.builder().requestTimeout(Duration.ofSeconds(5)).build();
 
-    OparlBody body = client.resolve(this.server.uri("/slow/body"), OparlBody.class).join();
+    OparlBody body = client.getAsync(this.server.uri("/slow/body"), OparlBody.class).join();
 
     assertEquals("Stadt Beispiel", body.getName());
   }

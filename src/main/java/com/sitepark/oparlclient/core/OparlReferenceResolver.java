@@ -16,5 +16,5 @@ public interface OparlReferenceResolver {
    * @param typeReference the type to map the object to
    * @return the object
    */
-  public <R> CompletableFuture<R> resolve(URI uri, TypeReference<R> typeReference);
+  public <R> CompletableFuture<R> getAsync(URI uri, TypeReference<R> typeReference);
 }

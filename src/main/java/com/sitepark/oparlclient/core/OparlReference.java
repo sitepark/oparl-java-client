@@ -39,7 +39,7 @@ public class OparlReference<R> {
    * @param uri the URL of the referenced object
    * @param referenceType the type the referenced object is mapped to
    * @param resolver resolves the reference, usually the {@code OparlClient}; without one, {@link
-   *     #resolve()} fails
+   *     #getAsync()} fails
    */
   public OparlReference(URI uri, JavaType referenceType, OparlReferenceResolver resolver) {
     this.uri = uri;
@@ -53,13 +53,13 @@ public class OparlReference<R> {
     return this.uri;
   }
 
-  /** Requests the referenced object. */
-  public CompletableFuture<R> resolve() {
+  /** Requests the referenced object asynchronously. */
+  public CompletableFuture<R> getAsync() {
     if (this.resolver == null) {
       return missingResolver();
     }
     Type returnType = this.referenceType;
-    return this.resolver.resolve(
+    return this.resolver.getAsync(
         this.uri,
         new TypeReference<R>() {
           @Override
@@ -70,19 +70,29 @@ public class OparlReference<R> {
   }
 
   /**
-   * Resolves the reference and waits for the result, see {@link OparlFutures#join} for the thrown
-   * exceptions.
+   * Requests the referenced object and waits for the result, see {@link OparlFutures#join} for the
+   * thrown exceptions.
    */
   public R get() {
-    return OparlFutures.join(this.resolve());
+    return OparlFutures.join(this.getAsync());
   }
 
   /**
    * Requests the referenced object and maps it to another class than the declared one, e.g. to an
-   * own subclass.
+   * own subclass; waits for the result.
    */
-  public <T> CompletableFuture<T> resolveAs(Class<T> clazz) {
-    return this.resolveAs(
+  public <T> T get(Class<T> clazz) {
+    return OparlFutures.join(this.getAsync(clazz));
+  }
+
+  /** See {@link #get(Class)}; for generic types. */
+  public <T> T get(TypeReference<T> typeReference) {
+    return OparlFutures.join(this.getAsync(typeReference));
+  }
+
+  /** Asynchronous variant of {@link #get(Class)}. */
+  public <T> CompletableFuture<T> getAsync(Class<T> clazz) {
+    return this.getAsync(
         new TypeReference<T>() {
           @Override
           public Type getType() {
@@ -91,12 +101,12 @@ public class OparlReference<R> {
         });
   }
 
-  /** See {@link #resolveAs(Class)}; for generic types. */
-  public <T> CompletableFuture<T> resolveAs(TypeReference<T> typeReference) {
+  /** Asynchronous variant of {@link #get(TypeReference)}. */
+  public <T> CompletableFuture<T> getAsync(TypeReference<T> typeReference) {
     if (this.resolver == null) {
       return missingResolver();
     }
-    return this.resolver.resolve(this.uri, typeReference);
+    return this.resolver.getAsync(this.uri, typeReference);
   }
 
   private <T> CompletableFuture<T> missingResolver() {

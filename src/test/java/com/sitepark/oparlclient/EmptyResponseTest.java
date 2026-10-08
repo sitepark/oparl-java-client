@@ -44,7 +44,7 @@ class EmptyResponseTest {
 
   @Test
   void failsForNullBody() {
-    Throwable cause = failureOf(this.client.resolve(this.server.uri("/null"), OparlBody.class));
+    Throwable cause = failureOf(this.client.getAsync(this.server.uri("/null"), OparlBody.class));
 
     assertInstanceOf(OparlException.class, cause);
     assertTrue(cause.getMessage().startsWith("Empty response"), cause.getMessage());
@@ -55,7 +55,7 @@ class EmptyResponseTest {
     OparlParseException e =
         assertInstanceOf(
             OparlParseException.class,
-            failureOf(this.client.resolve(this.server.uri("/empty"), OparlBody.class)));
+            failureOf(this.client.getAsync(this.server.uri("/empty"), OparlBody.class)));
 
     assertEquals(this.server.uri("/empty"), e.getUri());
     assertInstanceOf(JsonProcessingException.class, e.getCause());
@@ -64,13 +64,13 @@ class EmptyResponseTest {
   @Test
   void resolveAnyFailsForNullBody() {
     assertInstanceOf(
-        OparlException.class, failureOf(this.client.resolveAny(this.server.uri("/null"))));
+        OparlException.class, failureOf(this.client.getAnyAsync(this.server.uri("/null"))));
   }
 
   @Test
   void resolveAnyFailsForEmptyBody() {
     assertInstanceOf(
-        OparlException.class, failureOf(this.client.resolveAny(this.server.uri("/empty"))));
+        OparlException.class, failureOf(this.client.getAnyAsync(this.server.uri("/empty"))));
   }
 
   @Test

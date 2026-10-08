@@ -14,6 +14,8 @@
 
 	<rule ref="category/java/design.xml">
 		<exclude name="LawOfDemeter"/>
+		<!-- needs a list of packages to check, so PMD removes it otherwise -->
+		<exclude name="LoosePackageCoupling"/>
 		<!-- the OParl objects map the properties of the specification -->
 		<exclude name="DataClass"/>
 		<exclude name="TooManyFields"/>
